@@ -105,9 +105,9 @@ public class Solver {
             while (currentFitness <= previousFitness && (currentFitness > 200 || currentFitness == optimalTotalCost)
                     && delCount < maxDelegations) {
                 int days = rand.nextInt(4) + 2;
-                int reduction = 4 * days > maxMeals ? maxMeals : 4 * days;
                 int distanceIndex = rand.nextInt(distancesList.size());
                 days = distancesList.get(distanceIndex).duration.toHoursPart() < 2 ? 1 : days;
+                int reduction = 4 * days > maxMeals ? maxMeals : 4 * days;
 
                 if (!usedPoints.contains(distanceIndex)) {
                     usedPoints.add(distanceIndex);

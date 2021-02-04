@@ -19,7 +19,7 @@ public class Delegation{
 
     public String toString(){
         return "start: " + distance.startName + "; end: " + distance.endName + "; km: " + distance.kilometres
-                + "; travel time: " + distance.duration.toHoursPart() + " h " + distance.duration.toMinutesPart() + " min "
+                + "; travel time: " + distance.duration.toHoursPart() + " h " + distance.duration.toMinutesPart() + " min"
                 + "; days: " + days + "; meals: " + mealsReduction;
     }
 
