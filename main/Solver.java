@@ -504,6 +504,10 @@ public class Solver {
      */
     public ArrayList<Delegation> solve(int milliseconds, double epsilon) {
 
+        if(population.size() < populationSize){
+            return population.get(0);
+        }
+
         SecureRandom rand = new SecureRandom();
         long startTime = System.nanoTime();
         long endTime = System.nanoTime();
