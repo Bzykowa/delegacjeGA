@@ -12,6 +12,7 @@ public class Solver {
 
     private final int populationSize = 20;
     private final int tournamentContestants = 5;
+    private final int maxDays = 4;
 
     private ArrayList<Delegation> bestSolution;
     private double bestFitness;
@@ -80,6 +81,17 @@ public class Solver {
     }
 
     /**
+     * Generate random amount of days between minDays and maxDays
+     * @param minDays
+     * @return Random double value in specified range
+     */
+    private double generateRandomDays(double minDays){
+        SecureRandom rand = new SecureRandom();
+
+        return (rand.nextInt((int) ((maxDays - minDays) * 2) + 1) + 2 * minDays) / 2.0;
+    }
+
+    /**
      * Generate random solution
      * @param distancesList
      * @return
@@ -111,7 +123,7 @@ public class Solver {
 
             Delegation temp = new Delegation(distancesList.get(distanceIndex));
 
-            temp.setDaysWithDistanceCheck(rand.nextInt(3) + 2);
+            temp.setDaysWithDistanceCheck(generateRandomDays(0.5));
             temp.setRandomMealReductionWithMaxCheck(maxMeals);
 
             proposedSolutionRandom.add(temp);
@@ -139,6 +151,7 @@ public class Solver {
             ArrayList<Delegation> min = new ArrayList<>();
             min.add(cheapest);
             population.add(min);
+            bestSolution = min;
             return;
         }
 
@@ -159,13 +172,14 @@ public class Solver {
                 int distanceIndex = rand.nextInt(subDistanceListSize) + j * subDistanceListSize;
                 Delegation temp = new Delegation(distancesList.get(distanceIndex));
 
-                temp.setDaysWithDistanceCheck(rand.nextInt(3) + 2);
+                temp.setDaysWithDistanceCheck(generateRandomDays(0.5));
                 temp.setRandomMealReductionWithMaxCheck(maxMeals);
 
                 proposedSolutionDeterministic.add(temp);
             }
             population.add(proposedSolutionDeterministic);
         }
+        bestSolution = randomSolution(distancesList);
     }
 
     /**
@@ -210,7 +224,10 @@ public class Solver {
 
             if (newFitnesses[i] < bestFitness) {
                 bestFitness = newFitnesses[i];
-                bestSolution = population.get(i);
+                bestSolution.clear();
+                for(Delegation del : population.get(i)){
+                    bestSolution.add(del);
+                }
             }
         }
 
@@ -283,7 +300,7 @@ public class Solver {
         int swapIndex = rand.nextInt(maxSize);
 
         Delegation swap = delegation1.get(swapIndex);
-        int daysSwap = swap.days;
+        double daysSwap = swap.days;
         swap.setDaysWithDistanceCheck(delegation2.get(swapIndex).days);
         swap.setMealsReductionWithMaxCheck(maxMeals, swap.mealsReduction);
         delegation1.set(swapIndex, swap);
@@ -350,8 +367,7 @@ public class Solver {
      * @return Mutated delegation
      */
     private Delegation daysMutation(Delegation delegation) {
-        SecureRandom rand = new SecureRandom();
-        delegation.setDaysWithDistanceCheck(rand.nextInt(3) + 2);
+        delegation.setDaysWithDistanceCheck(generateRandomDays(0.5));
         delegation.setMealsReductionWithMaxCheck(maxMeals, delegation.mealsReduction);
 
         return delegation;
