@@ -75,4 +75,9 @@ public class Delegation {
                 + " min" + "; days: " + days + "; meals: " + mealsReduction;
     }
 
+    //Deep copy
+    public Delegation clone(){
+        return new Delegation(distance.clone(), days, mealsReduction);
+    }
+
 }

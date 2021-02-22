@@ -6,15 +6,11 @@ import java.security.SecureRandom;
 
 public class Solver {
 
-    /*
-     * km > 0 days >=2 and days <=5 meals >=0 and meals <= 4*days
-     */
-
     private final int populationSize = 20;
     private final int tournamentContestants = 5;
     private final int maxDays = 4;
 
-    private ArrayList<Delegation> bestSolution;
+    private ArrayList<Delegation> bestSolution = new ArrayList<>();
     private double bestFitness;
     private ArrayList<ArrayList<Delegation>> population = new ArrayList<>();
     private int maxDelegations = 0;
@@ -59,6 +55,15 @@ public class Solver {
 
     public ArrayList<Delegation> getBestSolution() {
         return bestSolution;
+    }
+
+    //Deep copy
+    private ArrayList<Delegation> cloneDelegations(ArrayList<Delegation> dels){
+        ArrayList<Delegation> newDels = new ArrayList<>();
+        for(Delegation del : dels){
+            newDels.add(del.clone());
+        }
+        return newDels;
     }
 
     /**
@@ -121,7 +126,7 @@ public class Solver {
                 continue;
             }
 
-            Delegation temp = new Delegation(distancesList.get(distanceIndex));
+            Delegation temp = new Delegation(distancesList.get(distanceIndex).clone());
 
             temp.setDaysWithDistanceCheck(generateRandomDays(0.5));
             temp.setRandomMealReductionWithMaxCheck(maxMeals);
@@ -143,15 +148,11 @@ public class Solver {
         ArrayList<Distance> distancesList = generateDistancesList();
         Collections.sort(distancesList);
 
-        Delegation cheapest = new Delegation(distancesList.get(0), 1, maxMeals);
-
         // If optimalCost is too low to build feasible solutions just get minimal
         // solution to population.
         if (optimalTotalCost < 80) {
-            ArrayList<Delegation> min = new ArrayList<>();
-            min.add(cheapest);
-            population.add(min);
-            bestSolution = min;
+            bestSolution.add(new Delegation(distancesList.get(0), 1, maxMeals));
+            population.add(cloneDelegations(bestSolution));
             return;
         }
 
@@ -224,10 +225,7 @@ public class Solver {
 
             if (newFitnesses[i] < bestFitness) {
                 bestFitness = newFitnesses[i];
-                bestSolution.clear();
-                for(Delegation del : population.get(i)){
-                    bestSolution.add(del);
-                }
+                bestSolution = cloneDelegations(population.get(i));
             }
         }
 
@@ -270,15 +268,18 @@ public class Solver {
         SecureRandom rand = new SecureRandom();
 
         int maxSize = delegation1.size() >= delegation2.size() ? delegation2.size() : delegation1.size();
-
         int swapIndex = rand.nextInt(maxSize);
-        Delegation swap = delegation1.get(swapIndex);
 
-        delegation1.set(swapIndex, delegation2.get(swapIndex));
-        delegation2.set(swapIndex, swap);
+        ArrayList<Delegation> del1 = cloneDelegations(delegation1); 
+        ArrayList<Delegation> del2 = cloneDelegations(delegation2);        
+        
+        Delegation swap = del1.get(swapIndex);
 
-        results.add(delegation1);
-        results.add(delegation2);
+        del1.set(swapIndex, del2.get(swapIndex));
+        del2.set(swapIndex, swap);
+
+        results.add(del1);
+        results.add(del2);
 
         return results;
     }
@@ -299,19 +300,22 @@ public class Solver {
         int maxSize = delegation1.size() >= delegation2.size() ? delegation2.size() : delegation1.size();
         int swapIndex = rand.nextInt(maxSize);
 
-        Delegation swap = delegation1.get(swapIndex);
+        ArrayList<Delegation> del1 = cloneDelegations(delegation1); 
+        ArrayList<Delegation> del2 = cloneDelegations(delegation2); 
+        
+        Delegation swap = del1.get(swapIndex);
         double daysSwap = swap.days;
-        swap.setDaysWithDistanceCheck(delegation2.get(swapIndex).days);
+        swap.setDaysWithDistanceCheck(del2.get(swapIndex).days);
         swap.setMealsReductionWithMaxCheck(maxMeals, swap.mealsReduction);
-        delegation1.set(swapIndex, swap);
+        del1.set(swapIndex, swap);
 
-        swap = delegation2.get(swapIndex);
+        swap = del2.get(swapIndex);
         swap.setDaysWithDistanceCheck(daysSwap);
         swap.setMealsReductionWithMaxCheck(maxMeals, swap.mealsReduction);
-        delegation2.set(swapIndex, swap);
+        del2.set(swapIndex, swap);
 
-        results.add(delegation1);
-        results.add(delegation2);
+        results.add(del1);
+        results.add(del2);
 
         return results;
     }
@@ -332,17 +336,20 @@ public class Solver {
         int maxSize = delegation1.size() >= delegation2.size() ? delegation2.size() : delegation1.size();
         int swapIndex = rand.nextInt(maxSize);
 
-        Delegation swap = delegation1.get(swapIndex);
+        ArrayList<Delegation> del1 = cloneDelegations(delegation1); 
+        ArrayList<Delegation> del2 = cloneDelegations(delegation2); 
+
+        Delegation swap = del1.get(swapIndex);
         int mealsSwap = swap.mealsReduction;
-        swap.setMealsReductionWithMaxCheck(maxMeals, delegation2.get(swapIndex).mealsReduction);
-        delegation1.set(swapIndex, swap);
+        swap.setMealsReductionWithMaxCheck(maxMeals, del2.get(swapIndex).mealsReduction);
+        del1.set(swapIndex, swap);
 
-        swap = delegation2.get(swapIndex);
+        swap = del2.get(swapIndex);
         swap.setMealsReductionWithMaxCheck(maxMeals, mealsSwap);
-        delegation2.set(swapIndex, swap);
+        del2.set(swapIndex, swap);
 
-        results.add(delegation1);
-        results.add(delegation2);
+        results.add(del1);
+        results.add(del2);
 
         return results;
     }
@@ -385,9 +392,10 @@ public class Solver {
         ArrayList<Distance> takenDistances = new ArrayList<>();
         Delegation min = null;
         Delegation min2 = null;
+        ArrayList<Delegation> dels = cloneDelegations(delegations);
 
         // Find already taken distances and find two shortest delegations
-        for (Delegation delegation : delegations) {
+        for (Delegation delegation : dels) {
             takenDistances.add(delegation.distance);
             if (min == null || min.distance.kilometres >= delegation.distance.kilometres) {
                 min2 = min;
@@ -399,7 +407,7 @@ public class Solver {
 
         // If unable to find two minimums end here
         if (min2 == null)
-            return delegations;
+            return dels;
 
         // Remove taken Distances
         for (Distance distance : takenDistances) {
@@ -429,11 +437,11 @@ public class Solver {
         merged.setDaysWithDistanceCheck(min.days);
         merged.setMealsReductionWithMaxCheck(maxMeals, min2.mealsReduction);
 
-        delegations.add(merged);
-        delegations.remove(min);
-        delegations.remove(min2);
+        dels.add(merged);
+        dels.remove(min);
+        dels.remove(min2);
 
-        return delegations;
+        return dels;
     }
 
     /**
@@ -452,9 +460,10 @@ public class Solver {
         ArrayList<Distance> availableDistances = generateDistancesList();
         ArrayList<Distance> takenDistances = new ArrayList<>();
         Delegation max = null;
+        ArrayList<Delegation> dels = cloneDelegations(delegations);
 
         // Find already taken distances and find maximum
-        for (Delegation delegation : delegations) {
+        for (Delegation delegation : dels) {
             takenDistances.add(delegation.distance);
             if (max == null || max.distance.kilometres <= delegation.distance.kilometres) {
                 max = delegation;
@@ -491,15 +500,15 @@ public class Solver {
             split2.setDaysWithDistanceCheck(max.days);
             split.setMealsReductionWithMaxCheck(maxMeals, max.mealsReduction);
             split2.setMealsReductionWithMaxCheck(maxMeals, max.mealsReduction);
-            delegations.add(split);
-            delegations.add(split2);
+            dels.add(split);
+            dels.add(split2);
         } catch (IndexOutOfBoundsException e) {
-            return delegations;
+            return dels;
         }
 
-        delegations.remove(max);
+        dels.remove(max);
 
-        return delegations;
+        return dels;
     }
 
     /**
@@ -558,7 +567,7 @@ public class Solver {
             }
 
             // To avoid converging of population add bestSolution and one random
-            newPopulation.add(bestSolution);
+            newPopulation.add(cloneDelegations(bestSolution));
             newPopulation.add(randomSolution(distancesList));
 
             int mutation = rand.nextInt(100);

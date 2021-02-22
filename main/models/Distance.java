@@ -19,6 +19,10 @@ public class Distance implements Comparable<Distance>{
         this.endName = endName;
     }
 
+    public Distance(){
+
+    }
+
     @Override
     public int compareTo(Distance o) {
         return Double.compare(this.kilometres,o.kilometres);
@@ -27,6 +31,18 @@ public class Distance implements Comparable<Distance>{
     @Override
     public boolean equals(Object obj) {
         return this.start == ((Distance)obj).start && this.end == ((Distance)obj).end;
+    }
+
+    //deep copy
+    public Distance clone(){
+        Distance d =  new Distance();
+        d.kilometres = this.kilometres;
+        d.duration = Duration.ofSeconds(this.duration.getSeconds());
+        d.start = this.start;
+        d.end  = this.end;
+        d.startName = new String(this.startName);
+        d.endName = new String(this.endName);
+        return d;
     }
 
 }
