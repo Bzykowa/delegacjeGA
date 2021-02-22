@@ -111,7 +111,7 @@ public class Solver {
 
             Delegation temp = new Delegation(distancesList.get(distanceIndex));
 
-            temp.setDaysWithDistanceCheck(rand.nextInt(4) + 2);
+            temp.setDaysWithDistanceCheck(rand.nextInt(3) + 2);
             temp.setRandomMealReductionWithMaxCheck(maxMeals);
 
             proposedSolutionRandom.add(temp);
@@ -159,7 +159,7 @@ public class Solver {
                 int distanceIndex = rand.nextInt(subDistanceListSize) + j * subDistanceListSize;
                 Delegation temp = new Delegation(distancesList.get(distanceIndex));
 
-                temp.setDaysWithDistanceCheck(rand.nextInt(4) + 2);
+                temp.setDaysWithDistanceCheck(rand.nextInt(3) + 2);
                 temp.setRandomMealReductionWithMaxCheck(maxMeals);
 
                 proposedSolutionDeterministic.add(temp);
@@ -351,7 +351,7 @@ public class Solver {
      */
     private Delegation daysMutation(Delegation delegation) {
         SecureRandom rand = new SecureRandom();
-        delegation.setDaysWithDistanceCheck(rand.nextInt(4) + 2);
+        delegation.setDaysWithDistanceCheck(rand.nextInt(3) + 2);
         delegation.setMealsReductionWithMaxCheck(maxMeals, delegation.mealsReduction);
 
         return delegation;
