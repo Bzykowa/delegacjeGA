@@ -33,11 +33,21 @@ public class Delegation {
      */
     public void setDaysWithDistanceCheck(double days) {
         if (distance.duration.toHoursPart() < 2) {
-            if (days <= 1.0) {
+            if (days <= 1.0 && days > 0.0) {
                 this.days = days;
             } else {
                 this.days = 1.0;
             }
+        } else if (distance.duration.toHoursPart() >= 2 && distance.duration.toHoursPart() < 4) {
+            if(days <= 1.0){
+                this.days = 1.5;
+            } else if(days > 3.0){
+                this.days = 3.0;
+            } else {
+                this.days = days;
+            }
+        } else if (distance.duration.toHoursPart() >= 4 && days <= 1.0) {
+            this.days = 2.0;
         } else {
             this.days = days;
         }
@@ -75,8 +85,8 @@ public class Delegation {
                 + " min" + "; days: " + days + "; meals: " + mealsReduction;
     }
 
-    //Deep copy
-    public Delegation clone(){
+    // Deep copy
+    public Delegation clone() {
         return new Delegation(distance.clone(), days, mealsReduction);
     }
 

@@ -93,7 +93,7 @@ public class Solver {
     private double generateRandomDays(double minDays){
         SecureRandom rand = new SecureRandom();
 
-        return (rand.nextInt((int) ((maxDays - minDays) * 2) + 1) + 2 * minDays) / 2.0;
+        return (rand.nextInt((int) ((maxDays - minDays) * 2) + 1) + 2.0 * minDays) / 2.0;
     }
 
     /**
