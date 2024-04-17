@@ -8,7 +8,7 @@ public class Solver {
 
     private final int populationSize = 20;
     private final int tournamentContestants = 5;
-    private final int maxDays = 4;
+    private final int maxDays = 5;
 
     private ArrayList<Delegation> bestSolution = new ArrayList<>();
     private double bestFitness;
@@ -17,18 +17,11 @@ public class Solver {
     private int maxMeals;
 
     private double optimalTotalCost;
-    private double[][] distances;
-    private int[][] durations;
-    private String[] citiesStart;
-    private String[] citiesEnd;
+    private ArrayList<Distance> distances;
 
-    public Solver(double optimalTotalCost, double[][] distances, int[][] durations, String[] citiesStart,
-            String[] citiesEnd, int meals) {
+    public Solver(double optimalTotalCost, ArrayList<Distance> distances, int meals) {
         this.optimalTotalCost = optimalTotalCost;
         this.distances = distances;
-        this.durations = durations;
-        this.citiesStart = citiesStart;
-        this.citiesEnd = citiesEnd;
         bestFitness = optimalTotalCost;
         maxMeals = meals;
 
@@ -57,40 +50,35 @@ public class Solver {
         return bestSolution;
     }
 
-    //Deep copy
-    private ArrayList<Delegation> cloneDelegations(ArrayList<Delegation> dels){
+    // Deep copy
+    private ArrayList<Delegation> cloneDelegations(ArrayList<Delegation> dels) {
         ArrayList<Delegation> newDels = new ArrayList<>();
-        for(Delegation del : dels){
+        for (Delegation del : dels) {
             newDels.add(del.clone());
         }
         return newDels;
     }
 
     /**
-     * Generate list of available Distances from given matrix and city names
+     * Clone list of available Distances from initial data
      * 
      * @return List of all Distances
      */
     private ArrayList<Distance> generateDistancesList() {
         ArrayList<Distance> distancesList = new ArrayList<>();
-
-        for (int i = 0; i < citiesStart.length; i++) {
-            for (int j = 0; j < citiesEnd.length; j++) {
-                if (i == j)
-                    continue;
-                distancesList.add(new Distance(distances[i][j], durations[i][j], i, j, citiesStart[i], citiesEnd[j]));
-            }
+        for (int i = 0; i < this.distances.size(); i++) {
+            distancesList.add(this.distances.get(i).clone());
         }
-
         return distancesList;
     }
 
     /**
      * Generate random amount of days between minDays and maxDays
+     * 
      * @param minDays
      * @return Random double value in specified range
      */
-    private double generateRandomDays(double minDays){
+    private double generateRandomDays(double minDays) {
         SecureRandom rand = new SecureRandom();
 
         return (rand.nextInt((int) ((maxDays - minDays) * 2) + 1) + 2.0 * minDays) / 2.0;
@@ -98,6 +86,7 @@ public class Solver {
 
     /**
      * Generate random solution
+     * 
      * @param distancesList
      * @return
      */
@@ -110,10 +99,9 @@ public class Solver {
         double currentFitness = checkFitness(proposedSolutionRandom);
 
         // Generate Delegations with distinct distances and stop when fitness drops
-        // beneath 200 or starts to grow again (optimalTotalCost check for the first
-        // Delegation because
-        // we're starting from empty list and delegations amount check to not generate
-        // too many)
+        // beneath 200 or starts to grow again (optimalTotalCost check is for the first
+        // Delegation because we're starting from empty list and delegations amount
+        // check is to not generate too many)
         int delCount = 0;
         while (currentFitness <= previousFitness && (currentFitness > 200 || currentFitness == optimalTotalCost)
                 && delCount < maxDelegations) {
@@ -270,9 +258,9 @@ public class Solver {
         int maxSize = delegation1.size() >= delegation2.size() ? delegation2.size() : delegation1.size();
         int swapIndex = rand.nextInt(maxSize);
 
-        ArrayList<Delegation> del1 = cloneDelegations(delegation1); 
-        ArrayList<Delegation> del2 = cloneDelegations(delegation2);        
-        
+        ArrayList<Delegation> del1 = cloneDelegations(delegation1);
+        ArrayList<Delegation> del2 = cloneDelegations(delegation2);
+
         Delegation swap = del1.get(swapIndex);
 
         del1.set(swapIndex, del2.get(swapIndex));
@@ -300,9 +288,9 @@ public class Solver {
         int maxSize = delegation1.size() >= delegation2.size() ? delegation2.size() : delegation1.size();
         int swapIndex = rand.nextInt(maxSize);
 
-        ArrayList<Delegation> del1 = cloneDelegations(delegation1); 
-        ArrayList<Delegation> del2 = cloneDelegations(delegation2); 
-        
+        ArrayList<Delegation> del1 = cloneDelegations(delegation1);
+        ArrayList<Delegation> del2 = cloneDelegations(delegation2);
+
         Delegation swap = del1.get(swapIndex);
         double daysSwap = swap.days;
         swap.setDaysWithDistanceCheck(del2.get(swapIndex).days);
@@ -336,8 +324,8 @@ public class Solver {
         int maxSize = delegation1.size() >= delegation2.size() ? delegation2.size() : delegation1.size();
         int swapIndex = rand.nextInt(maxSize);
 
-        ArrayList<Delegation> del1 = cloneDelegations(delegation1); 
-        ArrayList<Delegation> del2 = cloneDelegations(delegation2); 
+        ArrayList<Delegation> del1 = cloneDelegations(delegation1);
+        ArrayList<Delegation> del2 = cloneDelegations(delegation2);
 
         Delegation swap = del1.get(swapIndex);
         int mealsSwap = swap.mealsReduction;
@@ -397,10 +385,10 @@ public class Solver {
         // Find already taken distances and find two shortest delegations
         for (Delegation delegation : dels) {
             takenDistances.add(delegation.distance);
-            if (min == null || min.distance.kilometres >= delegation.distance.kilometres) {
+            if (min == null || min.distance.getFullKilometers() >= delegation.distance.getFullKilometers()) {
                 min2 = min;
                 min = delegation;
-            } else if (min2 == null || min2.distance.kilometres >= delegation.distance.kilometres) {
+            } else if (min2 == null || min2.distance.getFullKilometers() >= delegation.distance.getFullKilometers()) {
                 min2 = delegation;
             }
         }
@@ -426,8 +414,8 @@ public class Solver {
             Distance max = availableDistances.get(availableDistances.size() - 1);
 
             // Remove distances shorter than 2 times min
-            final double minDistance = 2 * min.distance.kilometres;
-            availableDistances.removeIf(d -> d.kilometres <= minDistance);
+            final double minDistance = 2 * min.distance.getFullKilometers();
+            availableDistances.removeIf(d -> d.getFullKilometers() <= minDistance);
 
             newDistance = availableDistances.isEmpty() ? max : availableDistances.get(0);
         }
@@ -465,7 +453,7 @@ public class Solver {
         // Find already taken distances and find maximum
         for (Delegation delegation : dels) {
             takenDistances.add(delegation.distance);
-            if (max == null || max.distance.kilometres <= delegation.distance.kilometres) {
+            if (max == null || max.distance.getFullKilometers() <= delegation.distance.getFullKilometers()) {
                 max = delegation;
             }
         }
@@ -482,10 +470,10 @@ public class Solver {
             Distance min = availableDistances.get(0);
             Distance min2 = availableDistances.get(1);
 
-            final double maxDistance = max.distance.kilometres / 2;
+            final double maxDistance = max.distance.getFullKilometers() / 2;
 
             // Remove distances longer than max distance by 2
-            availableDistances.removeIf(d -> d.kilometres >= maxDistance);
+            availableDistances.removeIf(d -> d.getFullKilometers() >= maxDistance);
 
             // Get min or two longest of remaining available distances
             Distance newDistance = availableDistances.isEmpty() ? min
@@ -529,7 +517,7 @@ public class Solver {
      */
     public ArrayList<Delegation> solve(int milliseconds, double epsilon) {
 
-        if(population.size() < populationSize){
+        if (population.size() < populationSize) {
             return population.get(0);
         }
 
