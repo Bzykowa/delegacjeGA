@@ -7,6 +7,8 @@ public class Delegation {
     public Distance distance;
     public double days;
     public int mealsReduction;
+    private static final int mealsPL = 4;
+    private static final int mealsDE = 5;
 
     public Delegation(Distance distance, double days, int mealsReduction) {
         this.distance = distance;
@@ -20,15 +22,15 @@ public class Delegation {
         this.mealsReduction = 0;
     }
 
-    public double delegationCost() {
+    public double delegationCost(double euro) {
         // DE
-        if (this.distance.isGermany()) {
-            return 2.0 * distance.getFullKilometers() * Prices.perKilometreDE + days * Prices.perDayDE
-                    + ((int) (days - 1)) * Prices.perNightDE - mealsReduction * Prices.perMealDE;
+        if (distance.isGermany()) {
+            return 2.0 * distance.getFullKilometers() * Prices.perKilometre + (days * Prices.perDayDE 
+                    + ((int) (days - 1)) * Prices.perNightDE - mealsReduction * Prices.perMealDE) * euro;
         }
         // PL
         else {
-            return 2.0 * distance.getFullKilometers() * Prices.perKilometrePL + days * Prices.perDayPL
+            return 2.0 * distance.getFullKilometers() * Prices.perKilometre + days * Prices.perDayPL
                     + ((int) (days - 1)) * Prices.perNightPL - mealsReduction * Prices.perMealPL;
         }
 
@@ -71,7 +73,8 @@ public class Delegation {
      */
     public void setRandomMealReductionWithMaxCheck(int maxMeals) {
         SecureRandom rand = new SecureRandom();
-        int max = 4 * days > maxMeals ? maxMeals + 1 : (int) (4 * days) + 1;
+        int mealsQuota = distance.isGermany() ? mealsDE : mealsPL;
+        int max = mealsQuota * days > maxMeals ? maxMeals + 1 : (int) (mealsQuota * days) + 1;
         mealsReduction = rand.nextInt(max);
     }
 
@@ -84,7 +87,8 @@ public class Delegation {
      * @param meals
      */
     public void setMealsReductionWithMaxCheck(int maxMeals, int meals) {
-        int max = 4 * days > maxMeals ? maxMeals : (int) (4 * days);
+        int mealsQuota = distance.isGermany() ? mealsDE : mealsPL;
+        int max = mealsQuota * days > maxMeals ? maxMeals : (int) (mealsQuota * days);
         meals = meals > max ? max : meals;
         mealsReduction = meals;
     }

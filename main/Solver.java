@@ -8,7 +8,7 @@ public class Solver {
 
     private final int populationSize = 20;
     private final int tournamentContestants = 5;
-    private final int maxDays = 5;
+    private final int maxDays = 4;
 
     private ArrayList<Delegation> bestSolution = new ArrayList<>();
     private double bestFitness;
@@ -18,22 +18,24 @@ public class Solver {
 
     private double optimalTotalCost;
     private ArrayList<Distance> distances;
+    private double euro;
 
-    public Solver(double optimalTotalCost, ArrayList<Distance> distances, int meals) {
+    public Solver(double optimalTotalCost, ArrayList<Distance> distances, int meals, double euro) {
         this.optimalTotalCost = optimalTotalCost;
         this.distances = distances;
         bestFitness = optimalTotalCost;
         maxMeals = meals;
+        this.euro = euro;
 
-        if (optimalTotalCost <= 500) {
+        if (optimalTotalCost <= 1000) {
             maxDelegations = 1;
-        } else if (optimalTotalCost <= 1000) {
+        } else if (optimalTotalCost <= 1800) {
             maxDelegations = 2;
-        } else if (optimalTotalCost <= 1500) {
+        } else if (optimalTotalCost <= 2600) {
             maxDelegations = 3;
-        } else if (optimalTotalCost <= 2000) {
+        } else if (optimalTotalCost <= 3400) {
             maxDelegations = 4;
-        } else if (optimalTotalCost <= 2500) {
+        } else if (optimalTotalCost <= 4200) {
             maxDelegations = 5;
         } else {
             maxDelegations = 6;
@@ -181,7 +183,7 @@ public class Solver {
         double currentCost = 0;
 
         for (Delegation delegation : delegations) {
-            currentCost += delegation.delegationCost();
+            currentCost += delegation.delegationCost(euro);
         }
 
         return Math.abs(currentCost - optimalTotalCost);
@@ -200,13 +202,18 @@ public class Solver {
         for (int i = 0; i < populationSize; i++) {
             newFitnesses[i] = checkFitness(population.get(i));
 
-            // Penalty for repeating delegation
+            // Penalty for repeating delegation and too many delegations
+            int counter = 0;
             for (Delegation it : population.get(i)) {
+                counter++;
                 if (!distanceMonitor.contains(it.distance)) {
                     distanceMonitor.add(it.distance);
                 } else {
                     newFitnesses[i] += 10000;
                 }
+            }
+            if (counter >= 3){
+                newFitnesses[i] += counter * 10;
             }
 
             distanceMonitor.clear();

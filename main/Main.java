@@ -238,15 +238,17 @@ public class Main {
                         "Olszyna",
                         "Itzehoe"));
 
-        Solver optimalDelegations = new Solver(optimalCost, distances, meals);
+        double euroPrice = 4.3;
+
+        Solver optimalDelegations = new Solver(optimalCost, distances, meals, euroPrice);
 
         ArrayList<Delegation> optimal = optimalDelegations.solve(timeMillis, epsilon);
 
         double total = 0;
         System.out.println("---------------------------------------");
         for (Delegation delegation : optimal) {
-            total += delegation.delegationCost();
-            System.out.println("cost: " + delegation.delegationCost() + "; " + delegation.toString());
+            total += delegation.delegationCost(euroPrice);
+            System.out.println("cost: " + delegation.delegationCost(euroPrice) + "; " + delegation.toString());
         }
         System.out.println("TOTAL: " + total);
         System.out.println("---------------------------------------");
