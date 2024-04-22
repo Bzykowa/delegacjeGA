@@ -8,7 +8,7 @@ public class Solver {
 
     private final int populationSize = 20;
     private final int tournamentContestants = 5;
-    private final int maxDays = 4;
+    private final int maxDays = 5;
 
     private ArrayList<Delegation> bestSolution = new ArrayList<>();
     private double bestFitness;
@@ -110,10 +110,12 @@ public class Solver {
 
             int distanceIndex = rand.nextInt(distancesList.size());
 
-            if (!usedPoints.contains(distanceIndex)) {
-                usedPoints.add(distanceIndex);
-            } else {
-                continue;
+            if (!distancesList.get(distanceIndex).isGermany()) {
+                if (!usedPoints.contains(distanceIndex)) {
+                    usedPoints.add(distanceIndex);
+                } else {
+                    continue;
+                }
             }
 
             Delegation temp = new Delegation(distancesList.get(distanceIndex).clone());
@@ -205,6 +207,9 @@ public class Solver {
             // Penalty for repeating delegation and too many delegations
             int counter = 0;
             for (Delegation it : population.get(i)) {
+                if (it.distance.isGermany()) {
+                    continue;
+                }
                 counter++;
                 if (!distanceMonitor.contains(it.distance)) {
                     distanceMonitor.add(it.distance);
@@ -212,7 +217,7 @@ public class Solver {
                     newFitnesses[i] += 10000;
                 }
             }
-            if (counter >= 3){
+            if (counter >= 3) {
                 newFitnesses[i] += counter * 10;
             }
 
